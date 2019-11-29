@@ -6,7 +6,7 @@
     android:name="xyz.dev66.jumpropecounter.fragments.RecordItemListFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="5dp"
+    android:layout_margin="15dp"
     app:layoutManager="LinearLayoutManager"
     tools:context=".fragments.RecordItemListFragment"
     tools:listitem="@layout/fragment_record_item" />

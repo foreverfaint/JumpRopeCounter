@@ -1,16 +1,18 @@
 package xyz.dev66.jumpropecounter.fragments
 
 import android.os.Bundle
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.runOnUiThread
 import xyz.dev66.jumpropecounter.R
 import xyz.dev66.jumpropecounter.models.RecordItem
+
 
 class RecordItemListFragment : Fragment() {
 
@@ -28,7 +30,15 @@ class RecordItemListFragment : Fragment() {
 
             with(view) {
                 layoutManager = LinearLayoutManager(context)
+
                 adapter = recordItemAdapter
+
+                addItemDecoration(
+                    DividerItemDecoration(
+                        view.getContext(),
+                        DividerItemDecoration.VERTICAL
+                    )
+                )
             }
 
             notifyDataSetChanged()
