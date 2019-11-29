@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Jump Rope Counter</string>
+    <string name="counter_init_value">01:00.00</string>
+    <string name="start_text">Start</string>
+    <string name="stop_text">Stop</string>
+    <string name="request_microphone_access">Microphone access is required in order to record audio</string>
+    <string name="ok_text">Ok</string>
+</resources>
