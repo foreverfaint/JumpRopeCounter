@@ -11,6 +11,8 @@ import butterknife.BindView
 import butterknife.ButterKnife
 
 import xyz.dev66.jumpropecounter.R
+import xyz.dev66.jumpropecounter.libs.Recorder
+import xyz.dev66.jumpropecounter.libs.VolumeCalculator
 import xyz.dev66.jumpropecounter.libs.formatTime
 import java.util.concurrent.TimeUnit
 import kotlin.time.ExperimentalTime
@@ -24,6 +26,7 @@ const val STARTER_MILLIS_IN_FUTURE: Long = 3000
 
 const val STARTER_COUNT_DOWN_INTERVAL: Long = 100
 
+
 @ExperimentalTime
 class CounterFragment(val counterListener: ICounterListener) : Fragment() {
 
@@ -36,6 +39,13 @@ class CounterFragment(val counterListener: ICounterListener) : Fragment() {
 
     @BindView(R.id.tv_starter)
     lateinit var tvStarter: TextView
+
+    @BindView(R.id.v_volume_visualizer)
+    lateinit var vVolumeView: VolumeVisualizer
+
+    private val recorder by lazy {
+        Recorder(VolumeCalculator(vVolumeView))
+    }
 
     private val timerCounter by lazy {
         initTimerCounter()
@@ -97,6 +107,8 @@ class CounterFragment(val counterListener: ICounterListener) : Fragment() {
         tvCounter.visibility = View.VISIBLE
 
         timerCounter.start()
+
+        recorder.start()
     }
 
     private fun stopCounter() {
@@ -105,6 +117,8 @@ class CounterFragment(val counterListener: ICounterListener) : Fragment() {
         timerStarter.cancel()
 
         timerCounter.cancel()
+
+        recorder.stop()
     }
 
     fun start() {

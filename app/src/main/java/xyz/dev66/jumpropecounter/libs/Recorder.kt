@@ -1,33 +1,37 @@
 package xyz.dev66.jumpropecounter.libs
 
-import android.Manifest
-import android.content.Context
-import android.content.pm.PackageManager
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
-import android.os.Process.THREAD_PRIORITY_AUDIO
+import android.os.Process
 import android.util.Log
-import android.view.View
-import androidx.core.content.ContextCompat
 import kotlin.concurrent.thread
+import kotlin.math.abs
 
 const val SAMPLE_RATE = 44100
 
-interface IRecordingDataReceivedListener {
-    fun onDataReceived(data: ShortArray)
+interface IRecorderDataListener {
+    fun reset()
+    fun onDataReceived(sampleData: ByteArray)
 }
 
-interface IRecorder {
-    fun start()
-    fun stop()
+interface IRecorderVolumeListener {
+    fun reset()
+    fun onVolumeReceived(volume: Int)
 }
 
-class Recorder(private val listener: IRecordingDataReceivedListener): IRecorder {
+class VolumeCalculator(private val listener: IRecorderVolumeListener): IRecorderDataListener {
+    override fun reset() =
+        listener.reset()
 
+    override fun onDataReceived(sampleData: ByteArray) =
+        listener.onVolumeReceived(sampleData.map { abs(it.toInt()) }.average().toInt())
+}
+
+class Recorder(private val listener: IRecorderDataListener) {
     private val LOG_TAG: String = Recorder::class.java.simpleName
 
-    private var bufferSize: Int = AudioRecord.getMinBufferSize(
+    private var bufferSizeInBytes: Int = AudioRecord.getMinBufferSize(
         SAMPLE_RATE,
         AudioFormat.CHANNEL_IN_MONO,
         AudioFormat.ENCODING_PCM_16BIT
@@ -35,26 +39,26 @@ class Recorder(private val listener: IRecordingDataReceivedListener): IRecorder 
 
     private var isRecording = false
 
-    override fun start() {
+    private fun onStart() {
         val audioRecord = AudioRecord(
             MediaRecorder.AudioSource.DEFAULT,
             SAMPLE_RATE,
             AudioFormat.CHANNEL_IN_MONO,
             AudioFormat.ENCODING_PCM_16BIT,
-            bufferSize
+            bufferSizeInBytes
         )
 
         audioRecord.startRecording()
-        Log.v(LOG_TAG, "Start recording")
+        Log.v(LOG_TAG, "Recording start")
 
         isRecording = true
 
-        var shortsRead: Long = 0
-        val audioBuffer = ShortArray(bufferSize / 2)
+        val sampleData = ByteArray(bufferSizeInBytes)
+
+        listener.reset()
         while (isRecording) {
-            val numberOfShort = audioRecord.read(audioBuffer, 0, audioBuffer.size)
-            shortsRead += numberOfShort.toLong()
-            listener.onDataReceived(audioBuffer)
+            audioRecord.read(sampleData, 0, sampleData.size)
+            listener.onDataReceived(sampleData)
         }
 
         audioRecord.stop()
@@ -62,21 +66,18 @@ class Recorder(private val listener: IRecordingDataReceivedListener): IRecorder 
         Log.v(LOG_TAG, "Recording stopped")
     }
 
-    override fun stop() {
+    private fun onStop() {
         isRecording = false
     }
-}
 
-class AsyncRecorder(listener: IRecordingDataReceivedListener) : IRecorder {
-    private val recorder: IRecorder = Recorder(listener)
-
-    override fun start() {
-        thread(start = true, priority = THREAD_PRIORITY_AUDIO) {
-            recorder.start()
+    fun start() {
+        thread(start = true, priority = Process.THREAD_PRIORITY_AUDIO) {
+            onStart()
         }
     }
 
-    override fun stop() {
-        recorder.stop()
+    fun stop() {
+        onStop()
     }
 }
+

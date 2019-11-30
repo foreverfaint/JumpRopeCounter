@@ -10,6 +10,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <xyz.dev66.jumpropecounter.fragments.VolumeVisualizer
+            android:id="@+id/v_volume_visualizer"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:layout_constraintBottom_toTopOf="@+id/tv_counter"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <TextView
             android:id="@+id/tv_counter"
             android:layout_width="wrap_content"
