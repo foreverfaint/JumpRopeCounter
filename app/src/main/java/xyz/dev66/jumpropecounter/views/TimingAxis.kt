@@ -3,7 +3,9 @@ package xyz.dev66.jumpropecounter.views
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
+import xyz.dev66.jumpropecounter.libs.formatTime
 import java.util.concurrent.TimeUnit
 import kotlin.time.ExperimentalTime
 import kotlin.time.toDuration
@@ -19,6 +21,8 @@ class TimingAxis @JvmOverloads constructor(
     attrs: AttributeSet? = null,
     defStyle: Int = 0): View(context, attrs, defStyle) {
 
+    private val LOG_TAG: String = TimingAxis::class.java.simpleName
+
     private val defaultMatrix = Matrix()
 
     private val axisCanvas by lazy {
@@ -32,6 +36,12 @@ class TimingAxis @JvmOverloads constructor(
     private val axisPrimaryPaint = Paint().apply {
         color = Color.BLACK
         strokeWidth = 2.5f
+    }
+
+    private val axisTextPaint = Paint().apply {
+        color = Color.BLACK
+        textSize = 30f
+        typeface = Typeface.DEFAULT
     }
 
     private val axisSecondaryPaint = Paint().apply {
@@ -60,6 +70,14 @@ class TimingAxis @JvmOverloads constructor(
                     val y1 = height * 0.5f
                     val y2 = height.toFloat()
                     drawLine(x1, y1, x1, y2, axisPrimaryPaint)
+
+                    val tickMillis = (60 - millisUntilFinished / 1000 + i / SECONDARY_TICK_COUNT) * 1000
+                    val label = formatTime(tickMillis.toDuration(TimeUnit.MILLISECONDS), useMs = false)
+                    val labelWidth = axisTextPaint.measureText(label)
+                    val x3 = x1 - labelWidth * 0.5f
+                    val y3 = y1 - 5f
+                    Log.v(LOG_TAG, "$millisUntilFinished: i=$i, pos=($x3, $y3), label=$label")
+                    drawText(label, x3, y3, axisTextPaint)
                 } else {
                     val y1 = height * 0.75f
                     val y2 = height.toFloat()

@@ -6,13 +6,12 @@ import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.util.Log
 import java.util.*
-import kotlin.math.abs
-import kotlin.math.sqrt
+import kotlin.math.log10
 
 
 const val SAMPLE_RATE = 44100
 
-const val SAMPLING_INTERVAL = 100L
+const val SAMPLING_INTERVAL = 90L
 
 interface IRecorderDataListener {
     fun onRestart()
@@ -33,7 +32,7 @@ class VolumeCalculator(private val listener: IRecorderVolumeListener): IRecorder
         for (i in 0 until readSize) {
             sum += sampleData[i] * sampleData[i]
         }
-        listener.onVolumeReceived(sqrt(sum / readSize).toInt())
+        listener.onVolumeReceived(10 * log10(sum / readSize).toInt())
     }
 
 }
