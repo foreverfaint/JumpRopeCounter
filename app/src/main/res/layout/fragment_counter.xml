@@ -10,13 +10,20 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <xyz.dev66.jumpropecounter.fragments.VolumeVisualizer
+        <xyz.dev66.jumpropecounter.views.TimingAxis
+            android:id="@+id/v_timing_axis"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            app:layout_constraintBottom_toTopOf="@+id/v_volume_visualizer"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <xyz.dev66.jumpropecounter.views.VolumeVisualizer
             android:id="@+id/v_volume_visualizer"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
             app:layout_constraintBottom_toTopOf="@+id/tv_counter"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/v_timing_axis" />
 
         <TextView
             android:id="@+id/tv_counter"
@@ -29,7 +36,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.407" />
 
         <TextView
             android:id="@+id/tv_starter"

@@ -14,13 +14,15 @@ import xyz.dev66.jumpropecounter.R
 import xyz.dev66.jumpropecounter.libs.Recorder
 import xyz.dev66.jumpropecounter.libs.VolumeCalculator
 import xyz.dev66.jumpropecounter.libs.formatTime
+import xyz.dev66.jumpropecounter.views.TimingAxis
+import xyz.dev66.jumpropecounter.views.VolumeVisualizer
 import java.util.concurrent.TimeUnit
 import kotlin.time.ExperimentalTime
 import kotlin.time.toDuration
 
 const val COUNTER_MILLIS_IN_FUTURE: Long = 60000
 
-const val COUNTER_COUNT_DOWN_INTERVAL: Long = 10
+const val COUNTER_COUNT_DOWN_INTERVAL: Long = 100
 
 const val STARTER_MILLIS_IN_FUTURE: Long = 3000
 
@@ -42,6 +44,9 @@ class CounterFragment(val counterListener: ICounterListener) : Fragment() {
 
     @BindView(R.id.v_volume_visualizer)
     lateinit var vVolumeView: VolumeVisualizer
+
+    @BindView(R.id.v_timing_axis)
+    lateinit var vTimingAxis: TimingAxis
 
     private val recorder by lazy {
         Recorder(VolumeCalculator(vVolumeView))
@@ -73,6 +78,7 @@ class CounterFragment(val counterListener: ICounterListener) : Fragment() {
             override fun onTick(millisUntilFinished: Long) {
                 val duration = millisUntilFinished.toDuration(TimeUnit.MILLISECONDS)
                 tvCounter.text = formatTime(duration)
+                vTimingAxis.onTick(millisUntilFinished)
             }
 
             override fun onFinish() {
@@ -101,6 +107,8 @@ class CounterFragment(val counterListener: ICounterListener) : Fragment() {
     }
 
     fun startCounterAfterStarterCompleted() {
+        vVolumeView.onRestart()
+
         tvStarter.visibility = View.INVISIBLE
 
         tvCounter.text = formatTime(COUNTER_MILLIS_IN_FUTURE.toDuration(TimeUnit.MILLISECONDS))
@@ -119,6 +127,8 @@ class CounterFragment(val counterListener: ICounterListener) : Fragment() {
         timerCounter.cancel()
 
         recorder.stop()
+
+        vVolumeView.onRestart()
     }
 
     fun start() {

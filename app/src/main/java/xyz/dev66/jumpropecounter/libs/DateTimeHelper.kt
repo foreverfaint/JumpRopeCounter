@@ -5,11 +5,11 @@ import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
-fun formatTime(duration: Duration): String {
+fun formatTime(duration: Duration, useMs: Boolean = true): String {
     val minutes = "${duration.inSeconds.toLong() / 60}".padStart(2, '0')
     val seconds = "${duration.inSeconds.toLong() % 60}".padStart(2, '0')
     val milliseconds = "${(duration.inMilliseconds.toLong() % 1000) / 10}".padStart(2, '0')
-    return "$minutes:$seconds.$milliseconds"
+    return if (useMs) "$minutes:$seconds.$milliseconds" else "$minutes:$seconds"
 }
 
 fun getRandomDate(): Date {
