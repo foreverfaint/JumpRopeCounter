@@ -1,0 +1,19 @@
+package xyz.dev66.jumpropecounter.libs
+
+const val COUNTER_MILLIS_IN_FUTURE: Long = 60000
+
+const val COUNTER_COUNT_DOWN_INTERVAL: Long = 100
+
+const val STARTER_MILLIS_IN_FUTURE: Long = 3000
+
+const val STARTER_COUNT_DOWN_INTERVAL: Long = 100
+
+const val SECOND_COUNT_IN_VIEW = 10
+
+const val QUARTER_SECOND_COUNT = 4
+
+const val TOTAL_QUARTER_SECOND_COUNT = SECOND_COUNT_IN_VIEW * QUARTER_SECOND_COUNT
+
+const val SAMPLING_RATE = 44100
+
+const val SAMPLING_INTERVAL = 90L

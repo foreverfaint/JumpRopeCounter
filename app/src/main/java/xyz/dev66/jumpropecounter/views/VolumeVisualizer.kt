@@ -7,11 +7,12 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.View
 import xyz.dev66.jumpropecounter.libs.IRecorderVolumeListener
+import xyz.dev66.jumpropecounter.libs.*
 import java.lang.Exception
 import java.util.*
 
 
-private const val DEFAULT_NUM_COLUMNS = 100
+private const val DEFAULT_NUM_COLUMNS = SECOND_COUNT_IN_VIEW * 1000 / SAMPLING_INTERVAL
 
 
 class VolumeVisualizer @JvmOverloads constructor(
@@ -48,7 +49,7 @@ class VolumeVisualizer @JvmOverloads constructor(
 
     override fun onRestart() {
         volumeQueue.clear()
-        volumeQueue.addAll(Array(DEFAULT_NUM_COLUMNS) { 0 })
+        volumeQueue.addAll(Array(DEFAULT_NUM_COLUMNS.toInt()) { 0 })
 
         try {
             volumeCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)

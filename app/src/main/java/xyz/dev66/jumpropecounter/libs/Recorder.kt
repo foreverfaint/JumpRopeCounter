@@ -8,11 +8,6 @@ import android.util.Log
 import java.util.*
 import kotlin.math.log10
 
-
-const val SAMPLE_RATE = 44100
-
-const val SAMPLING_INTERVAL = 90L
-
 interface IRecorderDataListener {
     fun onRestart()
     fun onDataReceived(sampleData: ShortArray, readSize: Int)
@@ -44,7 +39,7 @@ class Recorder(private val listener: IRecorderDataListener) {
     private var timer: Timer? = null
 
     private val bufferSizeInBytes: Int = AudioRecord.getMinBufferSize(
-        SAMPLE_RATE,
+        SAMPLING_RATE,
         AudioFormat.CHANNEL_IN_MONO,
         AudioFormat.ENCODING_PCM_16BIT
     )
@@ -52,7 +47,7 @@ class Recorder(private val listener: IRecorderDataListener) {
     private val audioRecord: AudioRecord by lazy {
         AudioRecord(
             MediaRecorder.AudioSource.DEFAULT,
-            SAMPLE_RATE,
+            SAMPLING_RATE,
             AudioFormat.CHANNEL_IN_MONO,
             AudioFormat.ENCODING_PCM_16BIT,
             bufferSizeInBytes)
@@ -71,6 +66,8 @@ class Recorder(private val listener: IRecorderDataListener) {
             override fun run() {
                 if (!isRecording) {
                     audioRecord.stop()
+                    // Must stop AudioRecord to release recording resource before timer is cancelled
+                    timer!!.cancel()
                     Log.v(LOG_TAG, "Recording stopped")
                     return
                 }
@@ -89,7 +86,6 @@ class Recorder(private val listener: IRecorderDataListener) {
 
     private fun onStop() {
         isRecording = false
-        timer!!.cancel()
     }
 
     fun start() {

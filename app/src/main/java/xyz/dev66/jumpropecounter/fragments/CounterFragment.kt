@@ -11,22 +11,12 @@ import butterknife.BindView
 import butterknife.ButterKnife
 
 import xyz.dev66.jumpropecounter.R
-import xyz.dev66.jumpropecounter.libs.Recorder
-import xyz.dev66.jumpropecounter.libs.VolumeCalculator
-import xyz.dev66.jumpropecounter.libs.formatTime
+import xyz.dev66.jumpropecounter.libs.*
 import xyz.dev66.jumpropecounter.views.TimingAxis
 import xyz.dev66.jumpropecounter.views.VolumeVisualizer
 import java.util.concurrent.TimeUnit
 import kotlin.time.ExperimentalTime
 import kotlin.time.toDuration
-
-const val COUNTER_MILLIS_IN_FUTURE: Long = 60000
-
-const val COUNTER_COUNT_DOWN_INTERVAL: Long = 100
-
-const val STARTER_MILLIS_IN_FUTURE: Long = 3000
-
-const val STARTER_COUNT_DOWN_INTERVAL: Long = 100
 
 
 @ExperimentalTime
