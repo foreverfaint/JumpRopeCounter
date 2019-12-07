@@ -6,19 +6,18 @@ import android.icu.text.SimpleDateFormat
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
-import xyz.dev66.jumpropecounter.libs.IRecorderVolumeListener
 import xyz.dev66.jumpropecounter.libs.*
 import java.lang.Exception
 import java.util.*
 
 
-private const val DEFAULT_NUM_COLUMNS = SECOND_COUNT_IN_VIEW * 1000 / SAMPLING_INTERVAL
+private const val MILLISECONDS_IN_VIEW = SECOND_COUNT_IN_VIEW * 1000f
 
 
 class VolumeVisualizer @JvmOverloads constructor(
     context: Context?,
     attrs: AttributeSet? = null,
-    defStyle: Int = 0): View(context, attrs, defStyle), IRecorderVolumeListener {
+    defStyle: Int = 0): View(context, attrs, defStyle) {
 
     private val LOG_TAG: String = VolumeVisualizer::class.java.simpleName
 
@@ -32,11 +31,7 @@ class VolumeVisualizer @JvmOverloads constructor(
 
     private val defaultMatrix = Matrix()
 
-    private val volumeQueue = LinkedList<Int>()
-
-    private val columnWidth by lazy {
-        width.toFloat() / DEFAULT_NUM_COLUMNS
-    }
+    private val volumeWindow = LinkedList<Pair<Int, Long>>()
 
     private val volumeBackgroundPaint= Paint().apply {
         color = Color.LTGRAY
@@ -47,9 +42,8 @@ class VolumeVisualizer @JvmOverloads constructor(
         color = Color.DKGRAY
     }
 
-    override fun onRestart() {
-        volumeQueue.clear()
-        volumeQueue.addAll(Array(DEFAULT_NUM_COLUMNS.toInt()) { 0 })
+    fun reset() {
+        volumeWindow.clear()
 
         try {
             volumeCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
@@ -61,13 +55,13 @@ class VolumeVisualizer @JvmOverloads constructor(
         postInvalidate()
     }
 
-    override fun onVolumeReceived(volume: Int) {
+    fun receive(volume: Int, lastInMillis: Long) {
         Log.v(LOG_TAG, "volume=$volume, time=${SimpleDateFormat("HH:mm:ss.SSS").format(Date())}}")
 
-        with (volumeQueue) {
-            addLast(volume)
-            removeFirst()
-        }
+        val finishedInMillis = COUNTER_MILLIS_IN_FUTURE - lastInMillis
+        val firstInMillis = addVolumeToVolumeWindow(volume, finishedInMillis)
+
+        trimVolumeWindow(firstInMillis)
 
         with (volumeCanvas) {
             drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
@@ -80,12 +74,13 @@ class VolumeVisualizer @JvmOverloads constructor(
                 volumeBackgroundPaint
             )
 
-            for ((index, value) in volumeQueue.withIndex()) {
-                val y = value * 1f / Byte.MAX_VALUE * height
+            for ((currentVolume, currentInMillis) in volumeWindow) {
+                val y = currentVolume * 1f / Byte.MAX_VALUE * height
                 val y1 = height * 0.5f - y * 0.5f
                 val y2 = height * 0.5f + y * 0.5f
-                val x1 = index * columnWidth + columnWidth * 0.25f
-                val x2 = (index + 1) * columnWidth - columnWidth * 0.25f
+                val x = width.toFloat() * (1f - (finishedInMillis - currentInMillis) / MILLISECONDS_IN_VIEW)
+                val x1 = x - 2f
+                val x2 = x + 2f
                 drawRect(x1, y1, x2, y2, volumeForegroundPaint)
             }
         }
@@ -96,5 +91,27 @@ class VolumeVisualizer @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         canvas.drawBitmap(cachedBitmap, defaultMatrix, null)
+    }
+
+    private fun addVolumeToVolumeWindow(volume: Int, finishedInMillis: Long): Long {
+        volumeWindow.addLast(Pair(volume, finishedInMillis))
+        Log.d(LOG_TAG, "finishedInMillis=$finishedInMillis")
+        return finishedInMillis - MILLISECONDS_IN_VIEW.toLong()
+    }
+
+    private fun trimVolumeWindow(firstInMillis: Long) {
+        with (volumeWindow) {
+            while (true) {
+                val (_, currentInMillis) = first
+                if (currentInMillis < firstInMillis) {
+                    removeFirst()
+                    if (size == 0) {
+                        break
+                    }
+                    continue
+                }
+                break
+            }
+        }
     }
 }

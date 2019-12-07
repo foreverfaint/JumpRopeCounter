@@ -39,7 +39,7 @@ class CounterFragment(val counterListener: ICounterListener) : Fragment() {
     lateinit var vTimingAxis: TimingAxis
 
     private val recorder by lazy {
-        Recorder(VolumeCalculator(vVolumeView))
+        Recorder()
     }
 
     private val timerCounter by lazy {
@@ -68,7 +68,8 @@ class CounterFragment(val counterListener: ICounterListener) : Fragment() {
             override fun onTick(millisUntilFinished: Long) {
                 val duration = millisUntilFinished.toDuration(TimeUnit.MILLISECONDS)
                 tvCounter.text = formatTime(duration)
-                vTimingAxis.onTick(millisUntilFinished)
+                vVolumeView.receive(recorder.readVolume(), millisUntilFinished)
+                vTimingAxis.receive(millisUntilFinished)
             }
 
             override fun onFinish() {
@@ -97,16 +98,17 @@ class CounterFragment(val counterListener: ICounterListener) : Fragment() {
     }
 
     fun startCounterAfterStarterCompleted() {
-        vVolumeView.onRestart()
+        vVolumeView.reset()
+        vTimingAxis.reset()
 
         tvStarter.visibility = View.INVISIBLE
 
         tvCounter.text = formatTime(COUNTER_MILLIS_IN_FUTURE.toDuration(TimeUnit.MILLISECONDS))
         tvCounter.visibility = View.VISIBLE
 
-        timerCounter.start()
-
         recorder.start()
+
+        timerCounter.start()
     }
 
     private fun stopCounter() {
@@ -118,7 +120,8 @@ class CounterFragment(val counterListener: ICounterListener) : Fragment() {
 
         recorder.stop()
 
-        vVolumeView.onRestart()
+        vVolumeView.reset()
+        vTimingAxis.reset()
     }
 
     fun start() {

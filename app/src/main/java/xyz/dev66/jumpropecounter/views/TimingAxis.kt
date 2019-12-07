@@ -6,6 +6,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.View
 import xyz.dev66.jumpropecounter.libs.*
+import java.lang.Exception
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
 import kotlin.time.ExperimentalTime
@@ -50,7 +51,7 @@ class TimingAxis @JvmOverloads constructor(
         canvas.drawBitmap(cachedBitmap, defaultMatrix, null)
     }
 
-    fun onTick(millisUntilFinished: Long) {
+    fun receive(millisUntilFinished: Long) {
         with (axisCanvas) {
             drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
 
@@ -92,6 +93,17 @@ class TimingAxis @JvmOverloads constructor(
                 }
                 i += 1
             }
+        }
+
+        postInvalidate()
+    }
+
+    fun reset() {
+        try {
+            axisCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.e(LOG_TAG, "$e")
         }
 
         postInvalidate()
