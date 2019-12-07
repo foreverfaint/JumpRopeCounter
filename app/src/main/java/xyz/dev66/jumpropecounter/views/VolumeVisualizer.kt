@@ -10,10 +10,6 @@ import xyz.dev66.jumpropecounter.libs.*
 import java.lang.Exception
 import java.util.*
 
-
-private const val MILLISECONDS_IN_VIEW = SECOND_COUNT_IN_VIEW * 1000f
-
-
 class VolumeVisualizer @JvmOverloads constructor(
     context: Context?,
     attrs: AttributeSet? = null,
@@ -63,6 +59,10 @@ class VolumeVisualizer @JvmOverloads constructor(
 
         trimVolumeWindow(firstInMillis)
 
+        if (width <= 0 || height <= 0) {
+            return
+        }
+
         with (volumeCanvas) {
             drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
 
@@ -90,7 +90,10 @@ class VolumeVisualizer @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        canvas.drawBitmap(cachedBitmap, defaultMatrix, null)
+
+        if (width > 0 && height > 0) {
+            canvas.drawBitmap(cachedBitmap, defaultMatrix, null)
+        }
     }
 
     private fun addVolumeToVolumeWindow(volume: Int, finishedInMillis: Long): Long {

@@ -12,8 +12,7 @@ import butterknife.ButterKnife
 
 import xyz.dev66.jumpropecounter.R
 import xyz.dev66.jumpropecounter.libs.*
-import xyz.dev66.jumpropecounter.views.TimingAxis
-import xyz.dev66.jumpropecounter.views.VolumeVisualizer
+import xyz.dev66.jumpropecounter.views.VolumeVisualizerLayout
 import java.util.concurrent.TimeUnit
 import kotlin.time.ExperimentalTime
 import kotlin.time.toDuration
@@ -32,11 +31,8 @@ class CounterFragment(val counterListener: ICounterListener) : Fragment() {
     @BindView(R.id.tv_starter)
     lateinit var tvStarter: TextView
 
-    @BindView(R.id.v_volume_visualizer)
-    lateinit var vVolumeView: VolumeVisualizer
-
-    @BindView(R.id.v_timing_axis)
-    lateinit var vTimingAxis: TimingAxis
+    @BindView(R.id.volume_visualizer)
+    lateinit var layoutVolumeVisualizer: VolumeVisualizerLayout
 
     private val recorder by lazy {
         Recorder()
@@ -68,8 +64,9 @@ class CounterFragment(val counterListener: ICounterListener) : Fragment() {
             override fun onTick(millisUntilFinished: Long) {
                 val duration = millisUntilFinished.toDuration(TimeUnit.MILLISECONDS)
                 tvCounter.text = formatTime(duration)
-                vVolumeView.receive(recorder.readVolume(), millisUntilFinished)
-                vTimingAxis.receive(millisUntilFinished)
+
+                val volume = recorder.readVolume()
+                layoutVolumeVisualizer.receive(volume, millisUntilFinished)
             }
 
             override fun onFinish() {
@@ -98,8 +95,7 @@ class CounterFragment(val counterListener: ICounterListener) : Fragment() {
     }
 
     fun startCounterAfterStarterCompleted() {
-        vVolumeView.reset()
-        vTimingAxis.reset()
+        layoutVolumeVisualizer.reset()
 
         tvStarter.visibility = View.INVISIBLE
 
@@ -120,8 +116,7 @@ class CounterFragment(val counterListener: ICounterListener) : Fragment() {
 
         recorder.stop()
 
-        vVolumeView.reset()
-        vTimingAxis.reset()
+        layoutVolumeVisualizer.reset()
     }
 
     fun start() {

@@ -48,10 +48,17 @@ class TimingAxis @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        canvas.drawBitmap(cachedBitmap, defaultMatrix, null)
+
+        if (width > 0 && height > 0) {
+            canvas.drawBitmap(cachedBitmap, defaultMatrix, null)
+        }
     }
 
     fun receive(millisUntilFinished: Long) {
+        if (width <= 0 || height <= 0) {
+            return
+        }
+
         with (axisCanvas) {
             drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
 
