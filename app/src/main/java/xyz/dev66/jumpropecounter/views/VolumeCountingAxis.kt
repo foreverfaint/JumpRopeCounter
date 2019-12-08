@@ -57,7 +57,7 @@ class VolumeCountingAxis @JvmOverloads constructor(
         }
     }
 
-    fun receive(volume: Int, millisUntilFinished: Long) {
+    fun receive(volume: Int, millisUntilFinished: Long): Int {
         val millisFinished = COUNTER_MILLIS_IN_FUTURE - millisUntilFinished
 
         updateRecognizerWindow(volume, millisFinished)
@@ -71,7 +71,7 @@ class VolumeCountingAxis @JvmOverloads constructor(
         trimPatternWindow(firstInMillis)
 
         if (width <= 0 || height <= 0) {
-            return
+            return lastCount
         }
 
         with (axisCanvas) {
@@ -91,6 +91,8 @@ class VolumeCountingAxis @JvmOverloads constructor(
         }
 
         postInvalidate()
+
+        return lastCount
     }
 
     fun reset() {

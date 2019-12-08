@@ -39,9 +39,9 @@ class VolumeVisualizerLayout @JvmOverloads constructor(
         vVolumeCountingAxis.reset()
     }
 
-    fun receive(volume: Int, millisUntilFinished: Long) {
+    fun receive(volume: Int, millisUntilFinished: Long): Int {
         vVolumeView.receive(volume, millisUntilFinished)
         vTimingAxis.receive(millisUntilFinished)
-        vVolumeCountingAxis.receive(volume, millisUntilFinished)
+        return vVolumeCountingAxis.receive(volume, millisUntilFinished)
     }
 }

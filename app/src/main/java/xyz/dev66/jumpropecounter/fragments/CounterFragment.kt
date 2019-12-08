@@ -70,7 +70,8 @@ class CounterFragment(val counterListener: ICounterListener) : Fragment() {
             }
 
             override fun onFinish() {
-                counterListener.onCounterCompleted(10)
+                val lastCount = layoutVolumeVisualizer.receive(0, 0)
+                counterListener.onCounterCompleted(lastCount)
             }
         }
     }
