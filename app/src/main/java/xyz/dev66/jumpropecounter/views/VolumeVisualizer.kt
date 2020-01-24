@@ -9,6 +9,7 @@ import android.view.View
 import xyz.dev66.jumpropecounter.libs.*
 import java.lang.Exception
 import java.util.*
+import kotlin.math.log10
 
 class VolumeVisualizer @JvmOverloads constructor(
     context: Context?,
@@ -16,6 +17,8 @@ class VolumeVisualizer @JvmOverloads constructor(
     defStyle: Int = 0): View(context, attrs, defStyle) {
 
     private val LOG_TAG: String = VolumeVisualizer::class.java.simpleName
+
+    private val MAX_LOG_10 = 10 * log10(Short.MAX_VALUE * Short.MAX_VALUE * 1f)
 
     private val volumeCanvas by lazy {
         Canvas(cachedBitmap)
@@ -75,7 +78,7 @@ class VolumeVisualizer @JvmOverloads constructor(
             )
 
             for ((currentVolume, currentInMillis) in volumeWindow) {
-                val y = currentVolume * 1f / Byte.MAX_VALUE * height
+                val y = currentVolume * 1f / MAX_LOG_10 * height
                 val y1 = height * 0.5f - y * 0.5f
                 val y2 = height * 0.5f + y * 0.5f
                 val x = width.toFloat() * (1f - (finishedInMillis - currentInMillis) / MILLISECONDS_IN_VIEW)

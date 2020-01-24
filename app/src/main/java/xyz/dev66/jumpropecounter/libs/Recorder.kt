@@ -26,7 +26,7 @@ class Recorder {
 
     fun readVolume(): Int {
         // use a double size short array.
-        val audioBuffer = ShortArray(bufferSizeInBytes)
+        val audioBuffer = ShortArray(bufferSizeInBytes / 2)
         val readSize = audioRecord.read(audioBuffer, 0, audioBuffer.size)
         return calculateVolume(audioBuffer, readSize)
     }

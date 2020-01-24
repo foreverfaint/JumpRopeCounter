@@ -2,6 +2,7 @@ package xyz.dev66.jumpropecounter
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.content.res.Resources
 import android.os.Bundle
 import android.view.View
 import androidx.core.app.ActivityCompat
@@ -15,6 +16,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import xyz.dev66.jumpropecounter.fragments.CounterFragment
 import xyz.dev66.jumpropecounter.fragments.RecordItemListFragment
+import xyz.dev66.jumpropecounter.libs.Speaker
 import xyz.dev66.jumpropecounter.models.RecordItem
 
 import kotlin.time.ExperimentalTime
@@ -33,8 +35,8 @@ class MainActivity : BaseActivity(), CounterFragment.ICounterListener {
     @OnClick(R.id.fab_recording)
     fun onClick(view: View) {
         when (view.tooltipText) {
-            this@MainActivity.resources.getString(R.string.start_text) -> start()
-            this@MainActivity.resources.getString(R.string.stop_text) -> stop()
+            getText(R.string.start_text) -> start()
+            getText(R.string.stop_text) -> stop()
         }
     }
 
@@ -56,6 +58,16 @@ class MainActivity : BaseActivity(), CounterFragment.ICounterListener {
             hide(fragmentCounter)
             show(fragmentRecordItemList)
         }.commit()
+
+        val isChinese = getText(R.string.start_text) == "开始"
+        Speaker.getInstance(baseContext, isChinese).initialize()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        val isChinese = getText(R.string.start_text) == "开始"
+        Speaker.getInstance(baseContext, isChinese).destroy()
     }
 
     override fun onStop() {
@@ -81,7 +93,7 @@ class MainActivity : BaseActivity(), CounterFragment.ICounterListener {
 
         fragmentCounter.start()
         fabRecording.setImageDrawable(ResourcesCompat.getDrawable(resources, R.drawable.ic_stop_white_24dp, null))
-        fabRecording.tooltipText = resources.getString(R.string.stop_text)
+        fabRecording.tooltipText = getText(R.string.stop_text)
     }
 
     private fun stop() {
@@ -96,7 +108,7 @@ class MainActivity : BaseActivity(), CounterFragment.ICounterListener {
 
         fragmentCounter.stop()
         fabRecording.setImageDrawable(ResourcesCompat.getDrawable(resources, R.drawable.ic_play_arrow_white_24dp, null))
-        fabRecording.tooltipText = resources.getString(R.string.start_text)
+        fabRecording.tooltipText = getText(R.string.start_text)
     }
 
     private fun requestMicrophonePermission() {
