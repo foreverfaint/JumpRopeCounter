@@ -7,9 +7,7 @@ import android.util.Log
 import android.view.View
 import xyz.dev66.jumpropecounter.libs.*
 import java.lang.Exception
-import java.util.*
-import kotlin.math.pow
-import kotlin.math.sqrt
+import kotlin.math.max
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
@@ -41,13 +39,7 @@ class VolumeCountingAxis @JvmOverloads constructor(
         typeface = Typeface.DEFAULT
     }
 
-    private val patternWindow = LinkedList<Pair<Int, Long>>()
-
-    private val recognizerWindow = LinkedList<Pair<Int, Long>>()
-
-    private val windowSizeInMillis = 400L
-
-    private var lastCount = 0
+    private var recognizer = PeakRecognizer()
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
@@ -58,47 +50,42 @@ class VolumeCountingAxis @JvmOverloads constructor(
     }
 
     fun receive(volume: Int, millisUntilFinished: Long): Int {
+        if (width <= 0 || height <= 0) {
+            return 0
+        }
+
         val millisFinished = COUNTER_MILLIS_IN_FUTURE - millisUntilFinished
 
-        updateRecognizerWindow(volume, millisFinished)
+        recognizer.add(volume, millisFinished)
 
-        if (containsPattern()) {
-            lastCount += 1
-            patternWindow.addLast(Pair(lastCount, millisFinished))
-        }
-
-        val firstInMillis = millisFinished - MILLISECONDS_IN_VIEW.toLong()
-        trimPatternWindow(firstInMillis)
-
-        if (width <= 0 || height <= 0) {
-            return lastCount
-        }
+        var totalPeakCount = 0
 
         with (axisCanvas) {
             drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
 
-            for ((patternCount, currentInMillis) in patternWindow) {
-                val x1 = width.toFloat() * (1f - (millisFinished - currentInMillis) * 1f / MILLISECONDS_IN_VIEW)
+            for ((volumeData, index) in recognizer.computePeaks(
+                millisFinished - MILLISECONDS_IN_VIEW.toLong(), millisFinished)) {
+                val x1 = width.toFloat() * (1f - (millisFinished - volumeData.currentInMillis) * 1f / MILLISECONDS_IN_VIEW)
                 val y1 = 0f
                 val y2 = height * 0.5f
                 drawLine(x1, y1, x1, y2, axisPrimaryPaint)
 
-                val labelText = patternCount.toString()
+                val labelText = index.toString()
                 val labelWidth = axisTextPaint.measureText(labelText)
                 val x2 = x1 - labelWidth * 0.5f
                 drawText(labelText, x2, y2 + 30f, axisTextPaint)
+
+                totalPeakCount = max(totalPeakCount, index)
             }
         }
 
         postInvalidate()
 
-        return lastCount
+        return totalPeakCount
     }
 
     fun reset() {
-        lastCount = 0
-        recognizerWindow.clear()
-        patternWindow.clear()
+        recognizer = PeakRecognizer()
 
         try {
             axisCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
@@ -108,62 +95,5 @@ class VolumeCountingAxis @JvmOverloads constructor(
         }
 
         postInvalidate()
-    }
-
-    private fun updateRecognizerWindow(volume: Int, millisFinished: Long) {
-        with (recognizerWindow) {
-            addLast(Pair(volume, millisFinished))
-
-            while (true) {
-                if (size == 0) {
-                    break
-                }
-
-                val (_, currentInMillis) = first
-                if (currentInMillis + windowSizeInMillis < millisFinished) {
-                    removeFirst()
-                    continue
-                }
-                break
-            }
-        }
-    }
-
-    private fun containsPattern(): Boolean {
-        Log.d(LOG_TAG, recognizerWindow.joinToString { it.first.toString() })
-
-        if (recognizerWindow.size >= 4) {
-            val (lastVolume, _) = recognizerWindow.last
-            for ((i, p) in recognizerWindow.withIndex()) {
-                val (volume, _) = p
-
-                if (i == recognizerWindow.size - 1) {
-                    return true
-                } else if (lastVolume < volume) {
-                    break
-                } else if (volume > 0 && lastVolume / volume < 3) {
-                    return false
-                }
-            }
-        }
-
-        return false
-    }
-
-    private fun trimPatternWindow(firstInMillis: Long) {
-        with (patternWindow) {
-            while (true) {
-                if (size == 0) {
-                    break
-                }
-
-                val (_, currentInMillis) = first
-                if (currentInMillis < firstInMillis) {
-                    removeFirst()
-                    continue
-                }
-                break
-            }
-        }
     }
 }
