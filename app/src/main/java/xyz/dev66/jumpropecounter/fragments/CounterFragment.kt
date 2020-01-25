@@ -37,6 +37,9 @@ class CounterFragment(val counterListener: ICounterListener) : Fragment() {
     @BindView(R.id.tv_starter)
     lateinit var tvStarter: TextView
 
+    @BindView(R.id.tv_stopper)
+    lateinit var tvStopper: TextView
+
     @BindView(R.id.volume_visualizer)
     lateinit var layoutVolumeVisualizer: VolumeVisualizerLayout
 
@@ -94,9 +97,31 @@ class CounterFragment(val counterListener: ICounterListener) : Fragment() {
 
                 val volume = recorder.readVolume()
                 layoutVolumeVisualizer.receive(volume, millisUntilFinished)
+
+                // For last few seconds, speak out counter to notify people.
+                if (millisUntilFinished < 5000) {
+                    tvStopper.visibility = View.VISIBLE
+                    tvStopper.textSize = 96 * ((1000 - millisUntilFinished % 1000) / 1000.0f + 1.0f)
+                    tvStopper.text = (millisUntilFinished / 1000).toString()
+
+                    if (tvStopper.text in rememberTexts) {
+                        // Avoid repeating the same texts during one cycle.
+                        return
+                    }
+
+                    rememberTexts.add(tvStopper.text)
+
+                    this@CounterFragment.say(tvStopper.text)
+
+                    if (millisUntilFinished < 200) {
+                        this@CounterFragment.say(getText(R.string.stop_text))
+                    }
+                }
             }
 
             override fun onFinish() {
+                rememberTexts.clear()
+
                 val lastCount = layoutVolumeVisualizer.receive(0, 0)
                 counterListener.onCounterCompleted(lastCount)
             }
@@ -118,6 +143,7 @@ class CounterFragment(val counterListener: ICounterListener) : Fragment() {
 
         tvCounter.text = formatTime(COUNTER_MILLIS_IN_FUTURE.toDuration(TimeUnit.MILLISECONDS))
         tvCounter.visibility = View.INVISIBLE
+        tvStopper.visibility = View.INVISIBLE
 
         timerStarter.start()
     }
@@ -129,6 +155,7 @@ class CounterFragment(val counterListener: ICounterListener) : Fragment() {
 
         tvCounter.text = formatTime(COUNTER_MILLIS_IN_FUTURE.toDuration(TimeUnit.MILLISECONDS))
         tvCounter.visibility = View.VISIBLE
+        tvStopper.visibility = View.INVISIBLE
 
         recorder.start()
 
@@ -137,6 +164,7 @@ class CounterFragment(val counterListener: ICounterListener) : Fragment() {
 
     private fun stopCounter() {
         tvStarter.visibility = View.INVISIBLE
+        tvStopper.visibility = View.INVISIBLE
 
         timerStarter.cancel()
 
